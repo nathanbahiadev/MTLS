@@ -1,0 +1,37 @@
+services:
+  app:
+    container_name: app
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    expose:
+      - "5000"
+    command: python _app.py
+
+  webhook:
+    container_name: webhook
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    expose:
+      - "5000"
+    command: python _webhook.py
+    extra_hosts:
+      - "public.nbdev.com.br:172.17.0.1"
+      - "private.nbdev.com.br:172.17.0.1"
+    volumes:
+      - ./nginx/certs/client.crt:/app/client.crt:ro
+      - ./nginx/certs/client.key:/app/client.key:ro
+      - ./nginx/certs/ca.crt:/app/ca.crt:ro
+
+  nginx:
+    image: nginx
+    restart: always
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/certs/server.crt:/etc/nginx/server.crt:ro
+      - ./nginx/certs/server.key:/etc/nginx/server.key:ro
+      - ./nginx/certs/ca.crt:/etc/nginx/ca.crt:ro
+    ports:
+      - "80:80"
+      - "443:443"
