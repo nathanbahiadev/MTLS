@@ -3,10 +3,8 @@
 ```sh
 #!/bin/bash
 
-set -e
-
-DOMAIN="private.nbdev.com.br"
-CERT_DIR="./certs"
+export DOMAIN="mtls.autovist.com.br"
+export CERT_DIR="./nginx/certs"
 mkdir -p "$CERT_DIR"
 
 echo "🔧 Criando Autoridade Certificadora (CA)..."
@@ -18,18 +16,6 @@ echo "🔧 Criando chave e CSR para o servidor..."
 openssl req -new -nodes -newkey rsa:2048 \
   -keyout "$CERT_DIR/server.key" -out "$CERT_DIR/server.csr" \
   -subj "/C=BR/ST=RJ/L=Quatis/O=NBDev/OU=Backend/CN=$DOMAIN"
-
-echo "📄 Gerando arquivo server.ext..."
-cat > "$CERT_DIR/server.ext" <<EOF
-authorityKeyIdentifier=keyid,issuer
-basicConstraints=CA:FALSE
-keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
-extendedKeyUsage = serverAuth
-subjectAltName = @alt_names
-
-[alt_names]
-DNS.1 = $DOMAIN
-EOF
 
 echo "🔐 Assinando certificado do servidor com a CA..."
 openssl x509 -req -in "$CERT_DIR/server.csr" -CA "$CERT_DIR/ca.crt" -CAkey "$CERT_DIR/ca.key" \
